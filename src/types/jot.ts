@@ -1,5 +1,5 @@
 
-export interface Jot {
+export interface JotProps {
   id: string;
   content: string;
   createdAt: string;
