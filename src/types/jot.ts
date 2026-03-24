@@ -1,12 +1,11 @@
-import { Timestamp } from "firebase/firestore";
 
 export interface Jot {
   id: string;
   content: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: string;
+  updatedAt: string;
   bumpCount: number;
   status: "active" | "archived";
   archiveReason?: "faded" | "completed";
-  archivedAt?: Timestamp;
+  archivedAt?: string;
 }
