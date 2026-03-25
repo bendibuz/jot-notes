@@ -6,6 +6,7 @@ export interface JotProps {
   updatedAt: string;
   bumpCount: number;
   status: "active" | "archived";
+  onBump?: () => void;
   archiveReason?: "faded" | "completed";
   archivedAt?: string;
 }
