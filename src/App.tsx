@@ -12,6 +12,9 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+
+
+
 const createJot = (content: string): JotProps => {
   const now = new Date().toISOString();
   return {
@@ -20,9 +23,12 @@ const createJot = (content: string): JotProps => {
     createdAt: now,
     updatedAt: now,
     bumpCount: 0,
+    relevancy: 1,
     status: "active",
   }
 }
+
+
 
 export default function App() {
   const [renderView, setRenderView] = useState<string>("jots")
@@ -33,7 +39,10 @@ export default function App() {
   const addJot = () => {
     if (staged.length < 1) return;
     const newJot = createJot(staged)
-    setJots(jots => [...jots, newJot]);
+    setJots(jots => 
+      [...jots, newJot]
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    );
     setStaged("")
     };
 
@@ -61,7 +70,13 @@ export default function App() {
     );
   };
 
-      
+  const flipArchiveState = (id: string) => {
+  setJots(currentJots =>
+    currentJots.map(jot =>
+      jot.id === id ? { ...jot, status: jot.status == "active" ? "archived" : "active" } : jot
+    )
+  );
+};    
 
   return (
     <View className="mx-auto mt-12 w-[600px] h-[800px] bg-background p-12">
