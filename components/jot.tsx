@@ -1,7 +1,7 @@
 import { JotProps } from "../types/jot";
 import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
-import {ArrowUpFromLine } from "lucide-react-native"
+import { ArrowUpFromLine, RotateCcw } from "lucide-react-native"
 
 const INITIAL_LIFETIME_HOURS = 24;
 const DECAY_THRESHOLD = 0.01;
@@ -51,7 +51,10 @@ export const JotComponent: React.FunctionComponent<JotProps> = ({
         </View>
 
         <Pressable onPress={onBump} className="text-xs p-2 rounded-sm bg-accent">
-          <ArrowUpFromLine size={16} color={"beige"} />
+          {status === "archived"
+            ? <RotateCcw size={16} color="#ebe5e0" />
+            : <ArrowUpFromLine size={16} color="#ebe5e0" />
+          }
         </Pressable>
       </View>
     </View>

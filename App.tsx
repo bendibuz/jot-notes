@@ -1,12 +1,13 @@
 import "./global.css";
 import { JotComponent } from "./components/jot";
 import { JotProps } from "./types/jot";
-import { Text, View, TextInput, ScrollView, InputAccessoryView } from "react-native";
+import { Text, View, TextInput, ScrollView, InputAccessoryView, Dimensions, Animated, PanResponder } from "react-native";
 import { LayoutAnimation, Platform, UIManager, Pressable } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useState, useRef, useEffect } from "react";
 import { useFonts, Caveat_700Bold } from "@expo-google-fonts/caveat";
-import { PenTool } from 'lucide-react-native';
+import { PenTool, FileText, Archive } from 'lucide-react-native';
 
 const uuid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
@@ -14,6 +15,36 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SWIPE_THRESHOLD = SCREEN_WIDTH / 3;
+
+function SwipeToArchive({ children, onArchive }: { children: React.ReactNode; onArchive: () => void }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dy) < Math.abs(g.dx),
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderMove: (_, g) => { if (g.dx < 0) translateX.setValue(g.dx); },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -SWIPE_THRESHOLD) {
+          Animated.timing(translateX, { toValue: -SCREEN_WIDTH, duration: 250, useNativeDriver: true }).start(onArchive);
+        } else {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+      },
+    })
+  ).current;
+
+  return (
+    <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
+      {children}
+    </Animated.View>
+  );
+}
 
 const createJot = (content: string): JotProps => {
   const now = new Date().toISOString();
@@ -30,9 +61,11 @@ const createJot = (content: string): JotProps => {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AppContent />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AppContent />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -75,15 +108,45 @@ function AppContent() {
     );
   };
 
+  const flipArchiveState = (id: string) => {
+    setJots(currentJots =>
+      currentJots.map(jot =>
+        jot.id === id ? { ...jot, status: jot.status === "active" ? "archived" : "active" } : jot
+      )
+    );
+  };
+
+  const header = (
+    <View className="flex flex-row items-center justify-between mb-2">
+      <Text style={fontsLoaded ? { fontFamily: 'Caveat_700Bold', fontSize: 36 } : { fontSize: 36, fontWeight: 'bold' }} className="text-dark">Jot Notes</Text>
+      <View className="flex flex-row gap-2">
+        {([{ view: "jots", Icon: FileText }, { view: "archived", Icon: Archive }] as const).map(({ view, Icon }) => {
+          const active = renderView === view;
+          return (
+            <Pressable
+              key={view}
+              onPress={() => setRenderView(view)}
+              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: active ? '#b4a69b' : 'transparent', borderWidth: active ? 0 : 1.5, borderColor: '#b4a69b', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Icon size={16} color={active ? '#ebe5e0' : '#b4a69b'} />
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+
   // Android: toggle between centered pen button and input bar; layout resizes via adjustResize
   if (Platform.OS === "android") {
     return (
       <View className="flex-1 bg-background" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <View className="flex-1 px-4 pt-2">
-          <Text style={fontsLoaded ? { fontFamily: 'Caveat_700Bold', fontSize: 36 } : { fontSize: 36, fontWeight: 'bold' }} className="text-dark mb-2">Jot Notes</Text>
+          {header}
           <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
             {jots.filter(jot => jot.status === "active").map(jot => (
-              <JotComponent key={jot.id} {...jot} onBump={() => bumpJot(jot.id)} />
+              <SwipeToArchive key={jot.id} onArchive={() => flipArchiveState(jot.id)}>
+                <JotComponent {...jot} onBump={() => bumpJot(jot.id)} />
+              </SwipeToArchive>
             ))}
           </ScrollView>
           {isInputting ? (
@@ -122,17 +185,19 @@ function AppContent() {
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="flex-1 px-4 pt-2">
-        <Text style={fontsLoaded ? { fontFamily: 'Caveat_700Bold', fontSize: 36 } : { fontSize: 36, fontWeight: 'bold' }} className="text-dark mb-2">Jot Notes</Text>
+        {header}
         <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
-          {jots.filter(jot => jot.status === "active").length === 0 && (
+          {jots.filter(jot => jot.status === "active").length === 0 && renderView === "jots" && (
             <Text className="text-accent italic mt-2">Nothing here yet. Add a note to get started...</Text>
           )}
           {renderView === "jots"
             ? jots.filter(jot => jot.status === "active").map(jot => (
-                <JotComponent key={jot.id} {...jot} onBump={() => bumpJot(jot.id)} />
+                <SwipeToArchive key={jot.id} onArchive={() => flipArchiveState(jot.id)}>
+                  <JotComponent {...jot} onBump={() => bumpJot(jot.id)} />
+                </SwipeToArchive>
               ))
             : jots.filter(jot => jot.status === "archived").map(jot => (
-                <JotComponent key={jot.id} {...jot} onBump={() => bumpJot(jot.id)} />
+                <JotComponent key={jot.id} {...jot} onBump={() => flipArchiveState(jot.id)} />
               ))
           }
         </ScrollView>
