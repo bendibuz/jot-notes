@@ -10,8 +10,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#FFF5EC",
-        accent: "#964300",
+        background: "#ebe5e0",
+        accent: "#b4a69b",
+        dark: "#3d3630"
       },
       borderRadius: {
         DEFAULT: "5px",
