@@ -43,7 +43,7 @@ export const JotComponent: React.FunctionComponent<JotProps> = ({
   const timeLeft = remainingHours(updatedAt, bumpCount);
 
   return (
-    <View style={{ opacity }} className="bg-accent/20  w-full h-fit p-4 mt-4 rounded-lg" key={id}>
+    <View style={{ opacity }} className="bg-accent/20 w-full p-4 mt-4 rounded-lg" key={id}>
       <Text>{content}</Text>
       <View className="flex flex-row justify-between">
         <View className="self-end">
