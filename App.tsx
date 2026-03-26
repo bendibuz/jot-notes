@@ -83,6 +83,19 @@ function AppContent() {
   const [isInputting, setIsInputting] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
   const hasLoaded = useRef(false);
+  const renderViewRef = useRef(renderView);
+  renderViewRef.current = renderView;
+
+  const viewSwipe = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) =>
+        Math.abs(g.dx) > 20 && Math.abs(g.dy) < Math.abs(g.dx) * 0.75,
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -60 && renderViewRef.current === "jots") setRenderView("archived");
+        if (g.dx > 60 && renderViewRef.current === "archived") setRenderView("jots");
+      },
+    })
+  ).current;
 
   // Load jots from storage on mount
   useEffect(() => {
@@ -181,7 +194,7 @@ function AppContent() {
   if (Platform.OS === "android") {
     return (
       <View className="flex-1 bg-background" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
-        <View className="flex-1 px-4 pt-2">
+        <View className="flex-1 px-4 pt-2" {...viewSwipe.panHandlers}>
           {header}
           <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
             {jots.filter(jot => jot.status === "active").length === 0 && renderView === "jots" && (
