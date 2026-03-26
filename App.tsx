@@ -8,7 +8,8 @@ import { GestureHandlerRootView, Gesture, GestureDetector, PanGesture } from "re
 import { useState, useRef, useEffect, useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts, Caveat_700Bold } from "@expo-google-fonts/caveat";
-import { PenTool, FileText, Archive } from 'lucide-react-native';
+import { PenTool, FileText, Archive, Settings } from 'lucide-react-native';
+import { SettingsScreen } from "./components/settings";
 
 const uuid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
@@ -88,6 +89,7 @@ function AppContent() {
   const [jots, setJots] = useState<JotProps[]>([]);
   const [staged, setStaged] = useState<string>("");
   const [isInputting, setIsInputting] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
   const hasLoaded = useRef(false);
   const renderViewRef = useRef(renderView);
@@ -230,12 +232,21 @@ function AppContent() {
               {jotsContent}
             </ScrollView>
             {renderView === "archived" ? (
-              <View className="items-center mb-4">
-                {jots.some(jot => jot.status === "archived") && (
-                  <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
-                    <Text className="text-accent text-sm">Delete All</Text>
-                  </Pressable>
-                )}
+              <View className="flex-row items-center mb-4">
+                <View style={{ width: 36 }} />
+                <View className="flex-1 items-center">
+                  {jots.some(jot => jot.status === "archived") && (
+                    <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
+                      <Text className="text-accent text-sm">Delete All</Text>
+                    </Pressable>
+                  )}
+                </View>
+                <Pressable
+                  onPress={() => setShowSettings(true)}
+                  className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
+                >
+                  <Settings size={16} color="#b4a69b" />
+                </Pressable>
               </View>
             ) : isInputting ? (
               <View className="flex-row gap-2 pt-2">
@@ -254,17 +265,27 @@ function AppContent() {
                 </Pressable>
               </View>
             ) : (
-              <View className="items-center mb-4">
+              <View className="flex-row items-center mb-4">
+                <View style={{ width: 36 }} />
+                <View className="flex-1 items-center">
+                  <Pressable
+                    onPress={() => { setIsInputting(true); setTimeout(() => inputRef.current?.focus(), 50); }}
+                    className="w-32 h-32 rounded-3xl bg-accent items-center justify-center"
+                  >
+                    <PenTool size={26} color="#ebe5e0" />
+                  </Pressable>
+                </View>
                 <Pressable
-                  onPress={() => { setIsInputting(true); setTimeout(() => inputRef.current?.focus(), 50); }}
-                  className="w-32 h-32 rounded-3xl bg-accent items-center justify-center"
+                  onPress={() => setShowSettings(true)}
+                  className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
                 >
-                  <PenTool size={26} color="#ebe5e0" />
+                  <Settings size={16} color="#b4a69b" />
                 </Pressable>
               </View>
             )}
           </View>
         </GestureDetector>
+        <SettingsScreen visible={showSettings} onClose={() => setShowSettings(false)} />
       </View>
     );
   }
@@ -279,21 +300,30 @@ function AppContent() {
           <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
             {jotsContent}
           </ScrollView>
-          <View className="items-center" style={{ marginBottom: insets.bottom + 16 }}>
-            {renderView === "archived" ? (
-              jots.some(jot => jot.status === "archived") && (
-                <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
-                  <Text className="text-accent text-sm">Delete All</Text>
+          <View className="flex-row items-center" style={{ marginBottom: insets.bottom + 16 }}>
+            <View style={{ width: 36 }} />
+            <View className="flex-1 items-center">
+              {renderView === "archived" ? (
+                jots.some(jot => jot.status === "archived") && (
+                  <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
+                    <Text className="text-accent text-sm">Delete All</Text>
+                  </Pressable>
+                )
+              ) : (
+                <Pressable
+                  onPress={() => setIsInputting(true)}
+                  className="w-24 h-24 rounded-3xl bg-accent items-center justify-center"
+                >
+                  <PenTool size={26} color="#ebe5e0" />
                 </Pressable>
-              )
-            ) : (
-              <Pressable
-                onPress={() => setIsInputting(true)}
-                className="w-24 h-24 rounded-3xl bg-accent items-center justify-center"
-              >
-                <PenTool size={26} color="#ebe5e0" />
-              </Pressable>
-            )}
+              )}
+            </View>
+            <Pressable
+              onPress={() => setShowSettings(true)}
+              className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
+            >
+              <Settings size={16} color="#b4a69b" />
+            </Pressable>
           </View>
         </View>
       </GestureDetector>
@@ -317,6 +347,7 @@ function AppContent() {
           </View>
         </InputAccessoryView>
       )}
+      <SettingsScreen visible={showSettings} onClose={() => setShowSettings(false)} />
     </View>
   );
 }
