@@ -1,8 +1,12 @@
 ** Remaining Tasks **
 
 High Importance:
-- Add archiving function
-- Add reactivation for archived jots
+- Implement functionality to submit a "jot" by pressing enter instead of clicking the button
+- Add archiving function via a secondary button next to the bump button with a relevant icon from Lucide
+- Build a toggle button below the Jot header to switch between active and archived jots
+- Build the Archive view state 
+- Add reactivation for archived jots in the Archive view
+
 - Implement local storage
 
 Less Important:
