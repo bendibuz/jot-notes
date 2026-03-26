@@ -88,7 +88,7 @@ export default function App() {
 </View>
       <View className="w-full">
         <View className="flex flex-1 flex-row gap-2 my-2">
-          <TextInput className="flex-1 border border-accent border-2 rounded-lg w-full p-2 bg-white/80 " value={staged} onChangeText = {(e: string)=>{setStaged(e)}}></TextInput>
+          <TextInput className="flex-1 border border-accent border-2 rounded-lg w-full p-2 bg-white/80 " value={staged} onChangeText = {(e: string)=>{setStaged(e)}} onSubmitEditing={addJot} blurOnSubmit={false}></TextInput>
           <Pressable onPress = {addJot} className="p-4 flex justify-center items-center bg-background rounded-lg"><PenTool /> </Pressable>
         </View>
       </View>
