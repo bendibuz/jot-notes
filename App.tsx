@@ -1,10 +1,10 @@
 import "./global.css";
 import { JotComponent } from "./components/jot";
 import { JotProps } from "./types/jot";
-import { Text, View, TextInput, ScrollView, InputAccessoryView, Dimensions, Animated, PanResponder, Alert } from "react-native";
+import { Text, View, TextInput, ScrollView, InputAccessoryView, Dimensions, Animated, Alert } from "react-native";
 import { LayoutAnimation, Platform, UIManager, Pressable } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
-import { GestureHandlerRootView, Gesture, GestureDetector } from "react-native-gesture-handler";
+import { GestureHandlerRootView, Gesture, GestureDetector, PanGesture } from "react-native-gesture-handler";
 import { useState, useRef, useEffect, useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts, Caveat_700Bold } from "@expo-google-fonts/caveat";
@@ -20,33 +20,41 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH / 3;
 const STORAGE_KEY = "@jot-notes/jots";
 
-function SwipeToArchive({ children, onArchive }: { children: React.ReactNode; onArchive: () => void }) {
+function SwipeToArchive({ children, onArchive, viewSwipeGesture }: { children: React.ReactNode; onArchive: () => void; viewSwipeGesture: PanGesture }) {
   const translateX = useRef(new Animated.Value(0)).current;
   const onArchiveRef = useRef(onArchive);
   onArchiveRef.current = onArchive;
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dy) < Math.abs(g.dx),
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderMove: (_, g) => { if (g.dx < 0) translateX.setValue(g.dx); },
-      onPanResponderRelease: (_, g) => {
-        if (g.dx < -SWIPE_THRESHOLD) {
-          Animated.timing(translateX, { toValue: -SCREEN_WIDTH, duration: 250, useNativeDriver: true }).start(() => onArchiveRef.current());
+  const archiveGesture = useMemo(() =>
+    Gesture.Pan()
+      .runOnJS(true)
+      .activeOffsetX([-15, 15])
+      .failOffsetY([-20, 20])
+      .onUpdate((e) => {
+        if (e.translationX < 0) translateX.setValue(e.translationX);
+      })
+      .onEnd((e) => {
+        if (e.translationX < -SWIPE_THRESHOLD) {
+          Animated.timing(translateX, { toValue: -SCREEN_WIDTH, duration: 250, useNativeDriver: true })
+            .start(() => onArchiveRef.current());
         } else {
           Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
         }
-      },
-      onPanResponderTerminate: () => {
-        Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
-      },
-    })
-  ).current;
+      })
+      .onFinalize((_, success) => {
+        if (!success) Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+      }),
+    []
+  );
+
+  const raceGesture = useMemo(() => Gesture.Race(archiveGesture, viewSwipeGesture), [archiveGesture, viewSwipeGesture]);
 
   return (
-    <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
-      {children}
-    </Animated.View>
+    <GestureDetector gesture={raceGesture}>
+      <Animated.View style={{ transform: [{ translateX }] }}>
+        {children}
+      </Animated.View>
+    </GestureDetector>
   );
 }
 
@@ -200,7 +208,7 @@ function AppContent() {
       )}
       {renderView === "jots"
         ? jots.filter(jot => jot.status === "active").map(jot => (
-            <SwipeToArchive key={jot.id} onArchive={() => flipArchiveState(jot.id)}>
+            <SwipeToArchive key={jot.id} onArchive={() => flipArchiveState(jot.id)} viewSwipeGesture={viewSwipeGesture}>
               <JotComponent {...jot} onBump={() => bumpJot(jot.id)} />
             </SwipeToArchive>
           ))
