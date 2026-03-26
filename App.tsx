@@ -1,7 +1,7 @@
 import "./global.css";
 import { JotComponent } from "./components/jot";
 import { JotProps } from "./types/jot";
-import { Text, View, TextInput, ScrollView, InputAccessoryView, Dimensions, Animated, PanResponder } from "react-native";
+import { Text, View, TextInput, ScrollView, InputAccessoryView, Dimensions, Animated, PanResponder, Alert } from "react-native";
 import { LayoutAnimation, Platform, UIManager, Pressable } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -142,6 +142,21 @@ function AppContent() {
     );
   };
 
+  const deleteJot = (id: string) => {
+    setJots(currentJots => currentJots.filter(jot => jot.id !== id));
+  };
+
+  const deleteAllArchived = () => {
+    Alert.alert(
+      "Delete All Archived",
+      "This will permanently delete all archived jots. This can't be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete All", style: "destructive", onPress: () => setJots(j => j.filter(jot => jot.status !== "archived")) },
+      ]
+    );
+  };
+
   const header = (
     <View className="flex flex-row items-center justify-between mb-2">
       <Text style={fontsLoaded ? { fontFamily: 'Caveat_700Bold', fontSize: 36 } : { fontSize: 36, fontWeight: 'bold' }} className="text-dark">Jot Notes</Text>
@@ -179,10 +194,15 @@ function AppContent() {
                   </SwipeToArchive>
                 ))
               : jots.filter(jot => jot.status === "archived").map(jot => (
-                  <JotComponent key={jot.id} {...jot} onBump={() => flipArchiveState(jot.id)} />
+                  <JotComponent key={jot.id} {...jot} onBump={() => flipArchiveState(jot.id)} onDelete={() => deleteJot(jot.id)} />
                 ))
             }
           </ScrollView>
+          {renderView === "archived" && jots.some(jot => jot.status === "archived") && (
+            <Pressable onPress={deleteAllArchived} className="self-center mt-2 mb-2 px-4 py-2 rounded-full border border-accent">
+              <Text className="text-accent text-sm">Delete All</Text>
+            </Pressable>
+          )}
           {isInputting ? (
             <View className="flex flex-row gap-2 pt-2">
               <TextInput
@@ -231,10 +251,15 @@ function AppContent() {
                 </SwipeToArchive>
               ))
             : jots.filter(jot => jot.status === "archived").map(jot => (
-                <JotComponent key={jot.id} {...jot} onBump={() => flipArchiveState(jot.id)} />
+                <JotComponent key={jot.id} {...jot} onBump={() => flipArchiveState(jot.id)} onDelete={() => deleteJot(jot.id)} />
               ))
           }
         </ScrollView>
+        {renderView === "archived" && jots.some(jot => jot.status === "archived") && (
+          <Pressable onPress={deleteAllArchived} className="self-center mt-2 mb-2 px-4 py-2 rounded-full border border-accent">
+            <Text className="text-accent text-sm">Delete All</Text>
+          </Pressable>
+        )}
         <View className="items-center" style={{ marginBottom: insets.bottom + 16 }}>
           <Pressable
             onPress={() => setIsInputting(true)}

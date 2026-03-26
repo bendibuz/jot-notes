@@ -8,4 +8,5 @@ export interface JotProps {
   status: "active" | "archived";
   relevancy: number;
   onBump?: () => void;
+  onDelete?: () => void;
 }

@@ -1,6 +1,6 @@
 import { JotProps } from "../types/jot";
-import { View, Text, Pressable } from "react-native";
-import { ArrowUpFromLine, RotateCcw } from "lucide-react-native";
+import { View, Text, Pressable, Alert } from "react-native";
+import { ArrowUpFromLine, RotateCcw, Trash2 } from "lucide-react-native";
 
 const INITIAL_LIFETIME_HOURS = 24;
 const DECAY_THRESHOLD = 0.01;
@@ -34,8 +34,19 @@ const remainingHours = (updatedAt: string, bumpCount: number): string => {
   }
 };
 
+const confirmDelete = (onDelete: () => void) => {
+  Alert.alert(
+    "Delete Jot",
+    "This can't be undone.",
+    [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: onDelete },
+    ]
+  );
+};
+
 export const JotComponent: React.FunctionComponent<JotProps> = ({
-  id, content, updatedAt, bumpCount = 0, status = "active", onBump,
+  id, content, updatedAt, bumpCount = 0, status = "active", onBump, onDelete,
 }) => {
   const opacity = relevancyScore(updatedAt, bumpCount);
   const timeLeft = remainingHours(updatedAt, bumpCount);
@@ -47,12 +58,19 @@ export const JotComponent: React.FunctionComponent<JotProps> = ({
         <View className="self-end">
           <Text className="text-xs text-accent">{timeLeft}</Text>
         </View>
-        <Pressable onPress={onBump} className="p-2 rounded-sm bg-accent">
-          {status === "archived"
-            ? <RotateCcw size={16} color="#ebe5e0" />
-            : <ArrowUpFromLine size={16} color="#ebe5e0" />
-          }
-        </Pressable>
+        <View className="flex flex-row gap-2">
+          <Pressable onPress={onBump} className="p-2 rounded-sm bg-accent">
+            {status === "archived"
+              ? <RotateCcw size={16} color="#ebe5e0" />
+              : <ArrowUpFromLine size={16} color="#ebe5e0" />
+            }
+          </Pressable>
+          {status === "archived" && (
+            <Pressable onPress={() => onDelete && confirmDelete(onDelete)} className="p-2 rounded-sm bg-accent">
+              <Trash2 size={16} color="#ebe5e0" />
+            </Pressable>
+          )}
+        </View>
       </View>
     </View>
   );
