@@ -20,6 +20,8 @@ const SWIPE_THRESHOLD = SCREEN_WIDTH / 3;
 
 function SwipeToArchive({ children, onArchive }: { children: React.ReactNode; onArchive: () => void }) {
   const translateX = useRef(new Animated.Value(0)).current;
+  const onArchiveRef = useRef(onArchive);
+  onArchiveRef.current = onArchive;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -28,7 +30,7 @@ function SwipeToArchive({ children, onArchive }: { children: React.ReactNode; on
       onPanResponderMove: (_, g) => { if (g.dx < 0) translateX.setValue(g.dx); },
       onPanResponderRelease: (_, g) => {
         if (g.dx < -SWIPE_THRESHOLD) {
-          Animated.timing(translateX, { toValue: -SCREEN_WIDTH, duration: 250, useNativeDriver: true }).start(onArchive);
+          Animated.timing(translateX, { toValue: -SCREEN_WIDTH, duration: 250, useNativeDriver: true }).start(() => onArchiveRef.current());
         } else {
           Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
         }
@@ -72,7 +74,7 @@ export default function App() {
 function AppContent() {
   const insets = useSafeAreaInsets();
   const [fontsLoaded] = useFonts({ Caveat_700Bold });
-  const [renderView, setRenderView] = useState<string>("jots");
+  const [renderView, setRenderView] = useState<"jots" | "archived">("jots");
   const [jots, setJots] = useState<JotProps[]>([]);
   const [staged, setStaged] = useState<string>("");
   const [isInputting, setIsInputting] = useState<boolean>(false);
@@ -143,11 +145,19 @@ function AppContent() {
         <View className="flex-1 px-4 pt-2">
           {header}
           <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
-            {jots.filter(jot => jot.status === "active").map(jot => (
-              <SwipeToArchive key={jot.id} onArchive={() => flipArchiveState(jot.id)}>
-                <JotComponent {...jot} onBump={() => bumpJot(jot.id)} />
-              </SwipeToArchive>
-            ))}
+            {jots.filter(jot => jot.status === "active").length === 0 && renderView === "jots" && (
+              <Text className="text-accent italic mt-2">Nothing here yet. Add a note to get started...</Text>
+            )}
+            {renderView === "jots"
+              ? jots.filter(jot => jot.status === "active").map(jot => (
+                  <SwipeToArchive key={jot.id} onArchive={() => flipArchiveState(jot.id)}>
+                    <JotComponent {...jot} onBump={() => bumpJot(jot.id)} />
+                  </SwipeToArchive>
+                ))
+              : jots.filter(jot => jot.status === "archived").map(jot => (
+                  <JotComponent key={jot.id} {...jot} onBump={() => flipArchiveState(jot.id)} />
+                ))
+            }
           </ScrollView>
           {isInputting ? (
             <View className="flex flex-row gap-2 pt-2">

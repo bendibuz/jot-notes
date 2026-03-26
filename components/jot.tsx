@@ -1,12 +1,10 @@
 import { JotProps } from "../types/jot";
-import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
-import { ArrowUpFromLine, RotateCcw } from "lucide-react-native"
+import { ArrowUpFromLine, RotateCcw } from "lucide-react-native";
 
 const INITIAL_LIFETIME_HOURS = 24;
 const DECAY_THRESHOLD = 0.01;
 
-// Solve for K: threshold = exp(-K * lifetime_minutes), so K = -ln(threshold) / lifetime_minutes
 const LIFETIME_MINUTES = INITIAL_LIFETIME_HOURS * 60;
 const K = -Math.log(DECAY_THRESHOLD) / LIFETIME_MINUTES;
 
@@ -37,20 +35,19 @@ const remainingHours = (updatedAt: string, bumpCount: number): string => {
 };
 
 export const JotComponent: React.FunctionComponent<JotProps> = ({
-  id, content, createdAt, updatedAt, bumpCount = 0, status = "active", onBump, relevancy = 1
+  id, content, updatedAt, bumpCount = 0, status = "active", onBump,
 }) => {
   const opacity = relevancyScore(updatedAt, bumpCount);
   const timeLeft = remainingHours(updatedAt, bumpCount);
 
   return (
-    <View style={{ opacity }} className="bg-accent/20 w-full p-4 mt-4 rounded-lg" key={id}>
+    <View style={{ opacity }} className="bg-accent/20 w-full p-4 mt-4 rounded-lg">
       <Text>{content}</Text>
       <View className="flex flex-row justify-between">
         <View className="self-end">
-          <Text className="text-xs text-gray-600">{timeLeft}</Text>
+          <Text className="text-xs text-accent">{timeLeft}</Text>
         </View>
-
-        <Pressable onPress={onBump} className="text-xs p-2 rounded-sm bg-accent">
+        <Pressable onPress={onBump} className="p-2 rounded-sm bg-accent">
           {status === "archived"
             ? <RotateCcw size={16} color="#ebe5e0" />
             : <ArrowUpFromLine size={16} color="#ebe5e0" />
