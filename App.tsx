@@ -198,12 +198,15 @@ function AppContent() {
                 ))
             }
           </ScrollView>
-          {renderView === "archived" && jots.some(jot => jot.status === "archived") && (
-            <Pressable onPress={deleteAllArchived} className="self-center mt-2 mb-2 px-4 py-2 rounded-full border border-accent">
-              <Text className="text-accent text-sm">Delete All</Text>
-            </Pressable>
-          )}
-          {isInputting ? (
+          {renderView === "archived" ? (
+            <View className="items-center" style={{ marginBottom: 16 }}>
+              {jots.some(jot => jot.status === "archived") && (
+                <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
+                  <Text className="text-accent text-sm">Delete All</Text>
+                </Pressable>
+              )}
+            </View>
+          ) : isInputting ? (
             <View className="flex flex-row gap-2 pt-2">
               <TextInput
                 ref={inputRef}
@@ -255,18 +258,21 @@ function AppContent() {
               ))
           }
         </ScrollView>
-        {renderView === "archived" && jots.some(jot => jot.status === "archived") && (
-          <Pressable onPress={deleteAllArchived} className="self-center mt-2 mb-2 px-4 py-2 rounded-full border border-accent">
-            <Text className="text-accent text-sm">Delete All</Text>
-          </Pressable>
-        )}
         <View className="items-center" style={{ marginBottom: insets.bottom + 16 }}>
-          <Pressable
-            onPress={() => setIsInputting(true)}
-            className="w-24 h-24 rounded-3xl bg-accent items-center justify-center"
-          >
-            <PenTool size={26} color="#ebe5e0" />
-          </Pressable>
+          {renderView === "archived" ? (
+            jots.some(jot => jot.status === "archived") && (
+              <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
+                <Text className="text-accent text-sm">Delete All</Text>
+              </Pressable>
+            )
+          ) : (
+            <Pressable
+              onPress={() => setIsInputting(true)}
+              className="w-24 h-24 rounded-3xl bg-accent items-center justify-center"
+            >
+              <PenTool size={26} color="#ebe5e0" />
+            </Pressable>
+          )}
         </View>
       </View>
 
