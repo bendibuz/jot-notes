@@ -6,6 +6,7 @@ import { LayoutAnimation, Platform, UIManager, Pressable } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useState, useRef, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts, Caveat_700Bold } from "@expo-google-fonts/caveat";
 import { PenTool, FileText, Archive } from 'lucide-react-native';
 
@@ -48,6 +49,8 @@ function SwipeToArchive({ children, onArchive }: { children: React.ReactNode; on
   );
 }
 
+const STORAGE_KEY = "@jot-notes/jots";
+
 const createJot = (content: string): JotProps => {
   const now = new Date().toISOString();
   return {
@@ -79,6 +82,27 @@ function AppContent() {
   const [staged, setStaged] = useState<string>("");
   const [isInputting, setIsInputting] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
+  const hasLoaded = useRef(false);
+
+  // Load jots from storage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY).then(raw => {
+      if (raw) {
+        try {
+          setJots(JSON.parse(raw));
+        } catch {
+          // corrupt data — start fresh
+        }
+      }
+      hasLoaded.current = true;
+    });
+  }, []);
+
+  // Persist jots whenever they change, but not before the initial load
+  useEffect(() => {
+    if (!hasLoaded.current) return;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(jots));
+  }, [jots]);
 
   useEffect(() => {
     if (isInputting) inputRef.current?.focus();
