@@ -6,7 +6,8 @@
       "Bash(npx tsc:*)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

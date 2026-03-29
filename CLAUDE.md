@@ -210,10 +210,6 @@ Always configure LayoutAnimation _before_ the state update that triggers the re-
 These are planned features — don't assume they exist when working on related tasks:
 
 - Persistent storage (AsyncStorage is installed, not wired up)
-- Enter key submission on the text input
-- Archive button with icon on each jot card
-- Toggle UI button between "Jots" and "Archive" views
-- Reactivation of archived jots
 - 5-second interval to refresh decay calculations
 - Settings context menu / color scheme selector
 

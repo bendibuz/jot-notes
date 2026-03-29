@@ -10,9 +10,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#ebe5e0",
-        accent: "#b4a69b",
-        dark: "#3d3630"
+        background: "var(--color-background)",
+        secondary: "var(--color-secondary)",
+        accent: "var(--color-accent)",
+        dark: "var(--color-dark)",
       },
       borderRadius: {
         DEFAULT: "5px",

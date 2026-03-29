@@ -1,6 +1,7 @@
 import { JotProps } from "../types/jot";
 import { View, Text, Pressable, Alert } from "react-native";
 import { ArrowUpFromLine, RotateCcw, Trash2 } from "lucide-react-native";
+import { useTheme } from "../context/ThemeContext";
 
 const INITIAL_LIFETIME_HOURS = 24;
 const DECAY_THRESHOLD = 0.01;
@@ -50,9 +51,10 @@ export const JotComponent: React.FunctionComponent<JotProps> = ({
 }) => {
   const opacity = relevancyScore(updatedAt, bumpCount);
   const timeLeft = remainingHours(updatedAt, bumpCount);
+  const { scheme } = useTheme();
 
   return (
-    <View style={{ opacity }} className="bg-accent/20 w-full p-4 mt-4 rounded-lg">
+    <View style={{ opacity, backgroundColor: scheme.secondary }} className="w-full p-4 mt-4 rounded-lg">
       <Text>{content}</Text>
       <View className="flex flex-row justify-between">
         <View className="self-end">
@@ -61,13 +63,13 @@ export const JotComponent: React.FunctionComponent<JotProps> = ({
         <View className="flex flex-row gap-2">
           <Pressable onPress={onBump} className="p-2 rounded-sm bg-accent">
             {status === "archived"
-              ? <RotateCcw size={16} color="#ebe5e0" />
-              : <ArrowUpFromLine size={16} color="#ebe5e0" />
+              ? <RotateCcw size={16} color={scheme.background} />
+              : <ArrowUpFromLine size={16} color={scheme.background} />
             }
           </Pressable>
           {status === "archived" && (
             <Pressable onPress={() => onDelete && confirmDelete(onDelete)} className="p-2 rounded-sm bg-accent">
-              <Trash2 size={16} color="#ebe5e0" />
+              <Trash2 size={16} color={scheme.background} />
             </Pressable>
           )}
         </View>

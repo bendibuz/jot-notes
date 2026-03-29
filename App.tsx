@@ -10,6 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts, Caveat_700Bold } from "@expo-google-fonts/caveat";
 import { PenTool, FileText, Archive, Settings } from 'lucide-react-native';
 import { SettingsScreen } from "./components/settings";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
 const uuid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
@@ -76,14 +77,26 @@ export default function App() {
   return (
     <GestureHandlerRootView className="flex-1">
       <SafeAreaProvider>
-        <AppContent />
+        <ThemeProvider>
+          <ThemedRoot />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
+function ThemedRoot() {
+  const { themeVars } = useTheme();
+  return (
+    <View style={[{ flex: 1 }, themeVars]}>
+      <AppContent />
+    </View>
+  );
+}
+
 function AppContent() {
   const insets = useSafeAreaInsets();
+  const { scheme } = useTheme();
   const [fontsLoaded] = useFonts({ Caveat_700Bold });
   const [renderView, setRenderView] = useState<"jots" | "archived">("jots");
   const [jots, setJots] = useState<JotProps[]>([]);
@@ -193,9 +206,9 @@ function AppContent() {
               key={view}
               onPress={() => setRenderView(view)}
               className="w-9 h-9 rounded-full items-center justify-center"
-              style={{ backgroundColor: active ? '#b4a69b' : 'transparent' }}
+              style={{ backgroundColor: active ? scheme.accent : 'transparent' }}
             >
-              <Icon size={16} color={active ? '#ebe5e0' : '#b4a69b'} />
+              <Icon size={16} color={active ? scheme.background : scheme.accent} />
             </Pressable>
           );
         })}
@@ -245,7 +258,7 @@ function AppContent() {
                   onPress={() => setShowSettings(true)}
                   className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
                 >
-                  <Settings size={16} color="#b4a69b" />
+                  <Settings size={16} color={scheme.accent} />
                 </Pressable>
               </View>
             ) : isInputting ? (
@@ -261,7 +274,7 @@ function AppContent() {
                   blurOnSubmit={false}
                 />
                 <Pressable onPress={addJot} className="p-4 justify-center items-center bg-accent rounded-lg">
-                  <PenTool size={18} color="#ebe5e0" />
+                  <PenTool size={18} color={scheme.background} />
                 </Pressable>
               </View>
             ) : (
@@ -272,14 +285,14 @@ function AppContent() {
                     onPress={() => { setIsInputting(true); setTimeout(() => inputRef.current?.focus(), 50); }}
                     className="w-32 h-32 rounded-3xl bg-accent items-center justify-center"
                   >
-                    <PenTool size={26} color="#ebe5e0" />
+                    <PenTool size={26} color={scheme.background} />
                   </Pressable>
                 </View>
                 <Pressable
                   onPress={() => setShowSettings(true)}
-                  className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
+                  className="w-12 h-12 rounded-full items-center justify-center border-2 border-accent"
                 >
-                  <Settings size={16} color="#b4a69b" />
+                  <Settings size={16} color={scheme.accent} />
                 </Pressable>
               </View>
             )}
@@ -314,7 +327,7 @@ function AppContent() {
                   onPress={() => setIsInputting(true)}
                   className="w-24 h-24 rounded-3xl bg-accent items-center justify-center"
                 >
-                  <PenTool size={26} color="#ebe5e0" />
+                  <PenTool size={26} color={scheme.background} />
                 </Pressable>
               )}
             </View>
