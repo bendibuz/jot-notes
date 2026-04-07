@@ -2,6 +2,7 @@ import { JotProps } from "../types/jot";
 import { View, Text, Pressable, Alert } from "react-native";
 import { ArrowUpFromLine, RotateCcw, Trash2 } from "lucide-react-native";
 import { useTheme } from "../context/ThemeContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 const INITIAL_LIFETIME_HOURS = 24;
 const DECAY_THRESHOLD = 0.01;
@@ -54,26 +55,33 @@ export const JotComponent: React.FunctionComponent<JotProps> = ({
   const { scheme } = useTheme();
 
   return (
-    <View style={{ opacity, backgroundColor: scheme.secondary }} className="w-full p-4 mt-4 rounded-lg">
-      <Text>{content}</Text>
-      <View className="flex flex-row justify-between">
-        <View className="self-end">
-          <Text className="text-xs text-accent">{timeLeft}</Text>
-        </View>
-        <View className="flex flex-row gap-2">
-          <Pressable onPress={onBump} className="p-2 rounded-sm bg-accent">
-            {status === "archived"
-              ? <RotateCcw size={16} color={scheme.background} />
-              : <ArrowUpFromLine size={16} color={scheme.background} />
-            }
-          </Pressable>
-          {status === "archived" && (
-            <Pressable onPress={() => onDelete && confirmDelete(onDelete)} className="p-2 rounded-sm bg-accent">
-              <Trash2 size={16} color={scheme.background} />
+    <LinearGradient
+      colors={[scheme.accent, scheme.dark]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ opacity, borderRadius: 10, padding: 2, marginTop: 16, width: '100%' }}
+    >
+      <View style={{ borderRadius: 8 }} className="p-4 bg-secondary">
+        <Text>{content}</Text>
+        <View className="flex flex-row justify-between">
+          <View className="self-end">
+            <Text className="text-xs text-accent">{timeLeft}</Text>
+          </View>
+          <View className="flex flex-row gap-2">
+            <Pressable onPress={onBump} className="p-2 rounded-sm bg-accent">
+              {status === "archived"
+                ? <RotateCcw size={16} color={scheme.background} />
+                : <ArrowUpFromLine size={16} color={scheme.background} />
+              }
             </Pressable>
-          )}
+            {status === "archived" && (
+              <Pressable onPress={() => onDelete && confirmDelete(onDelete)} className="p-2 rounded-sm bg-accent">
+                <Trash2 size={16} color={scheme.background} />
+              </Pressable>
+            )}
+          </View>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };

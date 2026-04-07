@@ -9,6 +9,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts, Caveat_700Bold } from "@expo-google-fonts/caveat";
 import { PenTool, FileText, Archive, Settings } from 'lucide-react-native';
+import { LinearGradient } from "expo-linear-gradient";
 import { SettingsScreen } from "./components/settings";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
@@ -198,20 +199,28 @@ function AppContent() {
   const header = (
     <View className="flex-row items-center justify-between mb-2">
       <Text style={fontsLoaded ? { fontFamily: 'Caveat_700Bold', fontSize: 36 } : { fontSize: 36, fontWeight: 'bold' }} className="text-dark">Jot Notes</Text>
-      <View className="flex-row items-center rounded-full p-0.5 gap-0.5 border-2 border-accent">
-        {([{ view: "jots", Icon: FileText }, { view: "archived", Icon: Archive }] as const).map(({ view, Icon }) => {
-          const active = renderView === view;
-          return (
-            <Pressable
-              key={view}
-              onPress={() => setRenderView(view)}
-              className="w-9 h-9 rounded-full items-center justify-center"
-              style={{ backgroundColor: active ? scheme.accent : 'transparent' }}
-            >
-              <Icon size={16} color={active ? scheme.background : scheme.accent} />
-            </Pressable>
-          );
-        })}
+      <View className="flex-row items-center gap-2">
+        <Pressable
+          onPress={() => setShowSettings(true)}
+          className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
+        >
+          <Settings size={16} color={scheme.accent} />
+        </Pressable>
+        <View className="flex-row items-center rounded-full p-0.5 gap-0.5 border-2 border-accent">
+          {([{ view: "jots", Icon: FileText }, { view: "archived", Icon: Archive }] as const).map(({ view, Icon }) => {
+            const active = renderView === view;
+            return (
+              <Pressable
+                key={view}
+                onPress={() => setRenderView(view)}
+                className="w-9 h-9 rounded-full items-center justify-center"
+                style={{ backgroundColor: active ? scheme.accent : 'transparent' }}
+              >
+                <Icon size={16} color={active ? scheme.background : scheme.accent} />
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -245,21 +254,12 @@ function AppContent() {
               {jotsContent}
             </ScrollView>
             {renderView === "archived" ? (
-              <View className="flex-row items-center mb-4">
-                <View style={{ width: 36 }} />
-                <View className="flex-1 items-center">
-                  {jots.some(jot => jot.status === "archived") && (
-                    <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
-                      <Text className="text-accent text-sm">Delete All</Text>
-                    </Pressable>
-                  )}
-                </View>
-                <Pressable
-                  onPress={() => setShowSettings(true)}
-                  className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
-                >
-                  <Settings size={16} color={scheme.accent} />
-                </Pressable>
+              <View className="items-center mb-4">
+                {jots.some(jot => jot.status === "archived") && (
+                  <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
+                    <Text className="text-accent text-sm">Delete All</Text>
+                  </Pressable>
+                )}
               </View>
             ) : isInputting ? (
               <View className="flex-row gap-2 pt-2">
@@ -278,21 +278,19 @@ function AppContent() {
                 </Pressable>
               </View>
             ) : (
-              <View className="flex-row items-center mb-4">
-                <View style={{ width: 36 }} />
-                <View className="flex-1 items-center">
-                  <Pressable
-                    onPress={() => { setIsInputting(true); setTimeout(() => inputRef.current?.focus(), 50); }}
-                    className="w-32 h-32 rounded-3xl bg-accent items-center justify-center"
+              <View className="items-center mb-4">
+                <Pressable
+                  onPress={() => { setIsInputting(true); setTimeout(() => inputRef.current?.focus(), 50); }}
+                  style={{ width: 128, height: 128, borderRadius: 24, overflow: 'hidden' }}
+                >
+                  <LinearGradient
+                    colors={[scheme.accent, scheme.dark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
                   >
                     <PenTool size={26} color={scheme.background} />
-                  </Pressable>
-                </View>
-                <Pressable
-                  onPress={() => setShowSettings(true)}
-                  className="w-12 h-12 rounded-full items-center justify-center border-2 border-accent"
-                >
-                  <Settings size={16} color={scheme.accent} />
+                  </LinearGradient>
                 </Pressable>
               </View>
             )}
@@ -313,30 +311,28 @@ function AppContent() {
           <ScrollView className="flex-1 w-full" keyboardShouldPersistTaps="handled">
             {jotsContent}
           </ScrollView>
-          <View className="flex-row items-center" style={{ marginBottom: insets.bottom + 16 }}>
-            <View style={{ width: 36 }} />
-            <View className="flex-1 items-center">
-              {renderView === "archived" ? (
-                jots.some(jot => jot.status === "archived") && (
-                  <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
-                    <Text className="text-accent text-sm">Delete All</Text>
-                  </Pressable>
-                )
-              ) : (
-                <Pressable
-                  onPress={() => setIsInputting(true)}
-                  className="w-24 h-24 rounded-3xl bg-accent items-center justify-center"
+          <View className="items-center" style={{ marginBottom: insets.bottom + 16 }}>
+            {renderView === "archived" ? (
+              jots.some(jot => jot.status === "archived") && (
+                <Pressable onPress={deleteAllArchived} className="px-6 py-3 rounded-full border border-accent">
+                  <Text className="text-accent text-sm">Delete All</Text>
+                </Pressable>
+              )
+            ) : (
+              <Pressable
+                onPress={() => setIsInputting(true)}
+                style={{ width: 96, height: 96, borderRadius: 24, overflow: 'hidden' }}
+              >
+                <LinearGradient
+                  colors={[scheme.accent, scheme.dark]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
                 >
                   <PenTool size={26} color={scheme.background} />
-                </Pressable>
-              )}
-            </View>
-            <Pressable
-              onPress={() => setShowSettings(true)}
-              className="w-9 h-9 rounded-full items-center justify-center border-2 border-accent"
-            >
-              <Settings size={16} color="#b4a69b" />
-            </Pressable>
+                </LinearGradient>
+              </Pressable>
+            )}
           </View>
         </View>
       </GestureDetector>

@@ -38,6 +38,7 @@ const SettingsRow: React.FC<SettingsRowProps> = ({ icon, label, sublabel, onPres
 const SchemeSwatches: React.FC<{ s: ColorScheme }> = ({ s }) => (
   <View className="flex-row gap-1 mr-3">
     <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: s.background, borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" }} />
+    <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: s.secondary }} />
     <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: s.accent }} />
     <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: s.dark }} />
   </View>
